@@ -45,6 +45,11 @@ class LlavaMetaModel:
         mm_vision_select_feature = model_args.mm_vision_select_feature
         pretrain_mm_mlp_adapter = model_args.pretrain_mm_mlp_adapter
 
+        mm_vision_use_5layers = model_args.mm_vision_use_5layers
+        mm_vision_use_5layers_layernorm = model_args.mm_vision_use_5layers_layernorm
+        self.config.mm_vision_use_5layers = mm_vision_use_5layers
+        self.config.mm_vision_use_5layers_layernorm = mm_vision_use_5layers_layernorm
+
         self.config.mm_vision_tower = vision_tower
 
         if self.get_vision_tower() is None:

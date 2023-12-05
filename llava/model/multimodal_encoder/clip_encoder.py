@@ -12,6 +12,7 @@ class CLIPVisionTower(nn.Module):
 
         self.vision_tower_name = vision_tower
         self.select_layer = args.mm_vision_select_layer
+        self.mm_vision_use_5layers = args.mm_vision_use_5layers
         self.select_feature = getattr(args, 'mm_vision_select_feature', 'patch')
 
         if not delay_load:
@@ -27,14 +28,19 @@ class CLIPVisionTower(nn.Module):
         self.is_loaded = True
 
     def feature_select(self, image_forward_outs):
-        image_features = image_forward_outs.hidden_states[self.select_layer]
-        if self.select_feature == 'patch':
-            image_features = image_features[:, 1:]
-        elif self.select_feature == 'cls_patch':
-            image_features = image_features
+        if self.mm_vision_use_5layers:
+            image_features = [image_forward_outs['hidden_states'][index][:, 1:] for index in [-2, -5, -8, -11, 6]]
+            image_features = torch.cat(image_features, dim=-1)
+            return image_features
         else:
-            raise ValueError(f'Unexpected select feature: {self.select_feature}')
-        return image_features
+            image_features = image_forward_outs.hidden_states[self.select_layer]
+            if self.select_feature == 'patch':
+                image_features = image_features[:, 1:]
+            elif self.select_feature == 'cls_patch':
+                image_features = image_features
+            else:
+                raise ValueError(f'Unexpected select feature: {self.select_feature}')
+            return image_features
 
     @torch.no_grad()
     def forward(self, images):
@@ -71,7 +77,10 @@ class CLIPVisionTower(nn.Module):
 
     @property
     def hidden_size(self):
-        return self.config.hidden_size
+        if self.mm_vision_use_5layers:
+            return self.config.hidden_size * 5
+        else:
+            return self.config.hidden_size
 
     @property
     def num_patches(self):

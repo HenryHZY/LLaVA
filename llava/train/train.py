@@ -53,6 +53,8 @@ class ModelArguments:
     tune_mm_mlp_adapter: bool = field(default=False)
     vision_tower: Optional[str] = field(default=None)
     mm_vision_select_layer: Optional[int] = field(default=-1)   # default to the last layer
+    mm_vision_use_5layers: bool = field(default=False)  # default: false, 5layers refer to [-2, -5, -8, -11, 6]
+    mm_vision_use_5layers_layernorm: bool = field(default=False)  # default: false
     pretrain_mm_mlp_adapter: Optional[str] = field(default=None)
     mm_projector_type: Optional[str] = field(default='linear')
     mm_use_im_start_end: bool = field(default=False)
